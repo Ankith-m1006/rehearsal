@@ -59,6 +59,7 @@ button{font-family:inherit}
 .side{border-right:1px solid var(--line);padding:22px 16px 40px}
 .side h6{font:800 11px var(--font);letter-spacing:.55px;text-transform:uppercase;padding:16px 8px 8px;color:var(--ink)}
 .side h6:first-child{padding-top:4px}
+.ai{padding:2px 4px 6px}.ai textarea{width:100%;font:15px/1.4 var(--font);border:1px solid var(--line);border-radius:12px;padding:10px 12px;resize:vertical;margin:4px 0 10px;background:var(--soft2)}.ai textarea:focus{outline:2px solid var(--blue);background:#fff}.ai .pbtn{width:100%;box-sizing:border-box;text-align:center}.muted{color:var(--mute);font-size:13px;margin-top:8px}
 .side hr{border:0;border-top:1px solid var(--line);margin:12px 0 4px}
 .nav button{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;font-size:15px;color:var(--ink2);padding:8px 12px 8px 16px;border-radius:8px;line-height:20px}
 .nav button:hover{background:var(--soft2)}
@@ -103,6 +104,7 @@ ol.steps .why{display:block;color:var(--mute);font-size:13.5px;margin-top:2px}
 .rail .num{font:800 28px/1 var(--font);color:var(--ink)}
 .bugs{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:15px;color:var(--ink2)}
 .bugs li{padding:12px 16px;background:var(--soft2);border-radius:12px;border-left:3px solid var(--fail)}
+.finding{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;border-left:3px solid var(--fail)}.finding b{display:block;margin-bottom:4px}.finding p{color:var(--ink2);font-size:15px;margin:4px 0}.finding pre{font:12.5px/1.5 var(--mono);background:#0b1424;color:#e8eef9;border-radius:10px;padding:12px 14px;overflow-x:auto;margin-top:8px;white-space:pre-wrap}.finding .ev{color:var(--mute);font-size:13px}
 .foot{border-top:1px solid var(--line);color:var(--mute);font-size:13px;padding:18px 24px}
 
 @media (max-width:1180px){.rail{display:none}.page{grid-template-columns:240px minmax(0,1fr)}.main{padding:24px 28px 60px}}
@@ -123,7 +125,16 @@ ol.steps .why{display:block;color:var(--mute);font-size:13.5px;margin-top:2px}
 <div class="strip">You're in sandbox mode · every payment here runs in PayPal's sandbox, no real money moves</div>
 
 <div class="page">
-  <aside class="side nav" id="nav"></aside>
+  <aside class="side">
+    <div class="ai">
+      <h6>Describe a scenario</h6>
+      <textarea id="english-in" rows="4" placeholder="e.g. A buyer pays $20, I refund $5, then PayPal sends the refund webhook twice"></textarea>
+      <button class="pbtn black" id="compile">Build plan with AI</button>
+      <div class="muted" id="ai-msg"></div>
+    </div>
+    <hr>
+    <div class="nav" id="nav"></div>
+  </aside>
 
   <main class="main">
     <div class="crumbs" id="crumbs">Scenarios</div>
@@ -146,6 +157,12 @@ ol.steps .why{display:block;color:var(--mute);font-size:13.5px;margin-top:2px}
 
     <div class="verdict" id="result"><h2>Timeline</h2><span class="badge" id="badge" style="display:none"></span><span class="vmeta" id="vmeta">No run yet</span></div>
     <div id="grid" class="ag-theme-quartz"></div>
+
+    <section id="diagbox" style="display:none">
+      <h2 class="sec">Why it failed <span class="chip" style="vertical-align:middle;font-size:12px">AI diagnosis</span></h2>
+      <p class="lede" id="diagsum"></p>
+      <div id="diag"></div>
+    </section>
 
     <h2 class="sec" id="bugs">Bugs planted in the buggy shop</h2>
     <p class="lede">Chai Corner ships in two versions. The buggy one makes the mistakes real PayPal integrations make; the fixed one is the same shop done right.</p>
@@ -237,7 +254,7 @@ async function go() {
   if (!pick) return;
   $("#go").disabled = $("#go-top").disabled = true;
   $("#badge").style.display = ""; $("#badge").className = "badge run"; $("#badge").textContent = "Running"; $("#vmeta").textContent = `${pick.plan.title} · Chai Corner (${target})`;
-  grid.setGridOption("rowData", []);
+  grid.setGridOption("rowData", []); $("#diagbox").style.display = "none";
   $("#result").scrollIntoView({ behavior: "smooth", block: "start" });
   const r = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: pick.plan, target }) });
   const j = await r.json();
@@ -255,10 +272,36 @@ async function go() {
       $("#badge").className = "badge " + (fails ? "fail" : "pass");
       $("#badge").textContent = fails ? `${fails} failed` : "All passed";
       $("#vmeta").textContent = `${passes} passed · ${fails} failed · ${((run.endedAt - run.startedAt) / 1000).toFixed(1)} s · ${run.target}`;
+      if (fails) explain(j.id); else $("#diagbox").style.display = "none";
     }
   }, 1000);
 }
 $("#go").onclick = go; $("#go-top").onclick = go;
+
+$("#compile").onclick = async () => {
+  const english = $("#english-in").value.trim();
+  if (english.length < 8) { $("#ai-msg").textContent = "Describe the payment situation in a sentence."; return; }
+  $("#compile").disabled = true; $("#ai-msg").textContent = "Building a plan with AI…";
+  try {
+    const r = await fetch("/api/compile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ english }) });
+    const j = await r.json();
+    if (!r.ok) { $("#ai-msg").textContent = j.error + (j.details ? ": " + j.details.join("; ") : ""); return; }
+    const s = { id: "custom-" + Date.now(), english, plan: j.plan };
+    scenarios.push(s); select(s);
+    $("#ai-msg").textContent = `Plan built and validated${j.attempts > 1 ? ` (repaired after ${j.attempts - 1} rejected draft${j.attempts > 2 ? "s" : ""})` : ""}. Review it, then run.`;
+  } catch (e) { $("#ai-msg").textContent = "AI request failed"; }
+  finally { $("#compile").disabled = false; }
+};
+
+async function explain(runId) {
+  $("#diagbox").style.display = ""; $("#diagsum").textContent = "Reading the timeline and the handler code…"; $("#diag").innerHTML = "";
+  const r = await fetch(`/api/runs/${runId}/diagnose`, { method: "POST" });
+  const d = await r.json();
+  if (!r.ok) { $("#diagsum").textContent = d.error || "Diagnosis unavailable"; return; }
+  $("#diagsum").textContent = d.summary || "";
+  const esc = (t) => String(t || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  $("#diag").innerHTML = (d.findings || []).map((f) => `<div class="finding"><b>Step ${esc(f.step)}: ${esc(f.cause)}</b><p><b style="display:inline">Fix:</b> ${esc(f.fix)}</p>${f.patch ? `<pre>${esc(f.patch)}</pre>` : ""}<p class="ev">Evidence: ${esc(f.evidence)}</p></div>`).join("");
+}
 document.addEventListener("keydown", (e) => { if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); } });
 boot();
 </script>

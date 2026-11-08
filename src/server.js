@@ -9,6 +9,7 @@ import { validate } from "./runner/plan.js";
 import { getRun, listRuns, startRun } from "./runner/run.js";
 import { STARTER } from "./scenarios.js";
 import { spike } from "./spike.js";
+import { aiConfigured, compile, diagnose } from "./ai.js";
 
 const app = express();
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -23,7 +24,7 @@ app.use(express.static(path.join(dir, "..", "public")));
 app.use(express.json({ limit: "200kb" }));
 
 app.get("/api/health", (req, res) => res.json({
-  paypal: configured(), webhook: Boolean(process.env.PAYPAL_WEBHOOK_ID), ai: Boolean(process.env.GEMINI_API_KEY), unmatched: recentUnmatched(),
+  paypal: configured(), webhook: Boolean(process.env.PAYPAL_WEBHOOK_ID), ai: aiConfigured(), unmatched: recentUnmatched(),
 }));
 app.get("/api/scenarios", (req, res) => res.json(STARTER));
 app.get("/api/bugs", (req, res) => res.json(PLANTED_BUGS));
@@ -32,6 +33,30 @@ app.get("/api/runs/:id", (req, res) => {
   const r = getRun(req.params.id);
   return r ? res.json({ id: r.id, title: r.plan.title, plan: r.plan, target: r.target.label, status: r.status, timeline: r.timeline, startedAt: r.startedAt, endedAt: r.endedAt })
     : res.status(404).json({ error: "not found" });
+});
+
+let compiling = 0;
+app.post("/api/compile", async (req, res) => {
+  const english = String(req.body?.english || "").trim();
+  if (english.length < 8) return res.status(400).json({ error: "Describe the payment scenario in a sentence or two" });
+  if (!aiConfigured()) return res.status(503).json({ error: "AI is not configured on this server" });
+  if (compiling >= 3) return res.status(429).json({ error: "Busy, try again in a moment" });
+  compiling += 1;
+  try {
+    const out = await compile(english);
+    if (!out.plan) return res.status(422).json({ error: "Could not turn that into a valid plan", details: out.errors });
+    res.json({ english, plan: out.plan, attempts: out.attempts });
+  } catch (e) { res.status(502).json({ error: String(e.message || e) }); }
+  finally { compiling -= 1; }
+});
+
+app.post("/api/runs/:id/diagnose", async (req, res) => {
+  const r = getRun(req.params.id);
+  if (!r) return res.status(404).json({ error: "not found" });
+  if (!r.endedAt) return res.status(409).json({ error: "run still in progress" });
+  if (!aiConfigured()) return res.status(503).json({ error: "AI is not configured on this server" });
+  try { r.diagnosis = r.diagnosis || await diagnose(r); res.json(r.diagnosis); }
+  catch (e) { res.status(502).json({ error: String(e.message || e) }); }
 });
 
 let active = 0;

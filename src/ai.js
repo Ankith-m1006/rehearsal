@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EVENT_TYPES, validate } from "./runner/plan.js";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 export const aiConfigured = () => Boolean(process.env.GEMINI_API_KEY);
 
 async function gemini(prompt, { json = true, temperature = 0.2 } = {}) {

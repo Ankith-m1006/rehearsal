@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehearsal · rehearse PayPal payments before your customers do</title>
+<meta name="description" content="Write payment scenarios in plain English. Rehearsal plays them out in the real PayPal sandbox against your app and shows exactly where it breaks.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.js"></script>
+<style>
+:root{--ink:#0b1424;--ink2:#3a4558;--mute:#6b7487;--line:#e3e7ee;--bg:#fff;--soft:#f5f7fb;--blue:#0070e0;--navy:#003087;--pass:#0f7b3f;--fail:#c4161c;--warn:#a15c00}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.5}
+.wrap{width:min(1240px,100% - 32px);margin:0 auto}
+header{border-bottom:1px solid var(--line);padding:16px 0}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:15px}
+.pill{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink2)}
+.pill b{color:var(--pass)}
+.hero{padding:34px 0 18px}
+.hero h1{font-size:clamp(28px,4vw,44px);line-height:1.08;letter-spacing:-.02em;font-weight:700;max-width:860px}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{color:var(--ink2);max-width:760px;margin-top:10px;font-size:16.5px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:20px;padding:10px 0 50px}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff}
+.card h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:16px 18px 6px}
+.scen{padding:6px 10px 12px;display:flex;flex-direction:column;gap:6px}
+.scen button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:10px 12px;transition:.15s}
+.scen button:hover{border-color:var(--blue)}
+.scen button.on{border-color:var(--navy);box-shadow:0 0 0 2px #00308722}
+.scen b{display:block;font-size:14.5px}
+.scen span{display:block;font-size:13px;color:var(--mute)}
+.ctrl{padding:14px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{all:unset;flex:1;text-align:center;padding:8px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink2)}
+.seg button.on{background:var(--ink);color:#fff}
+.run{all:unset;cursor:pointer;text-align:center;background:var(--navy);color:#fff;font-weight:700;padding:12px;border-radius:12px}
+.run:disabled{opacity:.5;cursor:wait}
+.right{display:flex;flex-direction:column;gap:16px}
+.plan{padding:4px 18px 16px}
+.plan ol{padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.plan code,.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.verdict{display:flex;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.big{font-size:22px;font-weight:700}
+.big.pass{color:var(--pass)}.big.fail{color:var(--fail)}.big.run{color:var(--warn)}
+#grid{height:430px}
+.muted{color:var(--mute);font-size:13px}
+.bugs{padding:4px 18px 16px;font-size:13.5px;color:var(--ink2)}
+.bugs li{margin:3px 0 3px 18px}
+footer{border-top:1px solid var(--line);padding:18px 0;color:var(--mute);font-size:13px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="logo"><i>R</i>Rehearsal <span class="muted" style="font-weight:500">for PayPal</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill" id="h-pp">PayPal sandbox: …</span><span class="pill" id="h-wh">Webhook: …</span><span class="pill" id="h-ai">AI: …</span></div>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <h1>Payment bugs are found by customers. <em>Rehearse them first.</em></h1>
+  <p>Pick a scenario, or describe one in plain English. Rehearsal plays it out in the <b>real PayPal sandbox</b> against your app, forwards the <b>real signed webhooks</b> (twice, late, out of order, or forged), and checks your app's state after every step.</p>
+</div></section>
+
+<main class="wrap grid">
+  <aside class="card">
+    <h2>Scenarios</h2>
+    <div class="scen" id="scen"></div>
+    <div class="ctrl">
+      <div class="muted">Run against the demo shop, Chai Corner:</div>
+      <div class="seg" id="target"><button data-t="buggy" class="on">Buggy version</button><button data-t="fixed">Fixed version</button></div>
+      <button class="run" id="go">Run in the PayPal sandbox</button>
+    </div>
+  </aside>
+  <section class="right">
+    <div class="card"><h2>Plan</h2><div class="plan" id="plan"><span class="muted">Pick a scenario.</span></div></div>
+    <div class="card">
+      <div class="verdict"><span class="big" id="verdict">No run yet</span><span class="muted" id="vmeta"></span></div>
+      <div id="grid" class="ag-theme-quartz"></div>
+    </div>
+    <div class="card"><h2>Bugs planted in the buggy Chai Corner</h2><ul class="bugs" id="bugs"></ul></div>
+  </section>
+</main>
+
+<footer><div class="wrap">Rehearsal · PayPal sandbox only, no real money · <a href="https://github.com/Ankith-m1006/rehearsal">source</a></div></footer>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let scenarios = [], pick = null, target = "buggy", timer = null;
+const KIND = { paypal: "PayPal API", event: "Webhook in", forward: "To your app", expect: "Check", app: "Your app", note: "Note", error: "Error" };
+
+const grid = agGrid.createGrid($("#grid"), {
+  columnDefs: [
+    { field: "step", headerName: "#", width: 60 },
+    { field: "t", headerName: "Time", width: 90, valueFormatter: (p) => (p.value / 1000).toFixed(1) + "s" },
+    { field: "kind", headerName: "Type", width: 130, valueFormatter: (p) => KIND[p.value] || p.value, filter: true },
+    { field: "ok", headerName: "Result", width: 100, cellRenderer: (p) => p.value === true ? '<b style="color:var(--pass)">PASS</b>' : p.value === false ? '<b style="color:var(--fail)">FAIL</b>' : "" },
+    { field: "title", headerName: "What happened", flex: 2, wrapText: true, autoHeight: true },
+    { field: "detail", headerName: "Detail", flex: 1, wrapText: true, autoHeight: true, cellClass: "mono" },
+  ],
+  rowData: [], defaultColDef: { resizable: true, sortable: true },
+  getRowStyle: (p) => p.data.ok === false ? { background: "#fff1f1" } : p.data.ok === true ? { background: "#f1fbf4" } : null,
+});
+
+function showPlan(s) {
+  const li = s.plan.steps.map((st) => {
+    const { type, ...rest } = st; const args = Object.entries(rest).map(([k, v]) => `${k}=${v}`).join(", ");
+    return `<li><code>${type}</code> ${args}</li>`;
+  }).join("");
+  $("#plan").innerHTML = `<div style="font-weight:600;margin-bottom:6px">${s.plan.title}</div><div class="muted" style="margin-bottom:8px">“${s.english}”</div><ol>${li}</ol>`;
+}
+
+async function boot() {
+  const h = await (await fetch("/api/health")).json();
+  $("#h-pp").innerHTML = `PayPal sandbox: <b style="color:${h.paypal ? "var(--pass)" : "var(--fail)"}">${h.paypal ? "connected" : "not set"}</b>`;
+  $("#h-wh").innerHTML = `Webhook: <b>${h.webhook ? "registered" : "not set"}</b>`;
+  $("#h-ai").innerHTML = `AI: <b>${h.ai ? "on" : "off"}</b>`;
+  scenarios = await (await fetch("/api/scenarios")).json();
+  $("#scen").innerHTML = scenarios.map((s, i) => `<button data-i="${i}"><b>${s.plan.title}</b><span>${s.english}</span></button>`).join("");
+  $("#scen").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#scen button").forEach((x) => x.classList.toggle("on", x === b)); pick = scenarios[+b.dataset.i]; showPlan(pick); };
+  $("#scen button").click();
+  const bugs = await (await fetch("/api/bugs")).json();
+  $("#bugs").innerHTML = Object.values(bugs).map((b) => `<li>${b}</li>`).join("");
+}
+
+$("#target").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; target = b.dataset.t; document.querySelectorAll("#target button").forEach((x) => x.classList.toggle("on", x === b)); };
+
+$("#go").onclick = async () => {
+  if (!pick) return;
+  $("#go").disabled = true; $("#verdict").className = "big run"; $("#verdict").textContent = "Running…"; $("#vmeta").textContent = "";
+  grid.setGridOption("rowData", []);
+  const r = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: pick.plan, target }) });
+  const j = await r.json();
+  if (!r.ok) { $("#verdict").textContent = j.error || "Could not start"; $("#go").disabled = false; return; }
+  clearInterval(timer);
+  timer = setInterval(async () => {
+    const run = await (await fetch(`/api/runs/${j.id}`)).json();
+    grid.setGridOption("rowData", run.timeline);
+    const fails = run.timeline.filter((t) => t.kind === "expect" && t.ok === false).length;
+    const passes = run.timeline.filter((t) => t.kind === "expect" && t.ok === true).length;
+    if (run.endedAt) {
+      clearInterval(timer); $("#go").disabled = false;
+      $("#verdict").className = "big " + (fails ? "fail" : "pass");
+      $("#verdict").textContent = fails ? `${fails} check${fails > 1 ? "s" : ""} failed` : "All checks passed";
+      $("#vmeta").textContent = `${passes} passed · ${fails} failed · ${((run.endedAt - run.startedAt) / 1000).toFixed(1)}s · ${run.target}`;
+    }
+  }, 1000);
+};
+boot();
+</script>
+</body>
+</html>

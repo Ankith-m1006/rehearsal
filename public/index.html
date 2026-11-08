@@ -6,38 +6,42 @@
 <title>Rehearsal · rehearse PayPal payments before your customers do</title>
 <meta name="description" content="Write payment scenarios in plain English. Rehearsal plays them out in the real PayPal sandbox against your app and shows exactly where it breaks.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.js"></script>
 <style>
-:root{--ink:#0b1424;--ink2:#3a4558;--mute:#6b7487;--line:#e3e7ee;--bg:#fff;--soft:#f5f7fb;--blue:#0070e0;--navy:#003087;--pass:#0f7b3f;--fail:#c4161c;--warn:#a15c00}
+/* Visual language of PayPal's developer dashboard: navy + PayPal blue, pill buttons, white cards on a cool grey page,
+   a purple "sandbox" strip. No PayPal logo: Rehearsal is an independent tool built for PayPal developers. */
+:root{--ink:#001435;--ink2:#2c2e2f;--mute:#5b6577;--line:#dbe1ea;--bg:#f5f7fa;--blue:#0070e0;--blueh:#005ea6;--navy:#003087;--sandbox:#9b8cff;--sandboxbg:#efeaff;--pass:#0a7a34;--fail:#d20000;--warn:#a15c00}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.5}
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.5}
 .wrap{width:min(1240px,100% - 32px);margin:0 auto}
-header{border-bottom:1px solid var(--line);padding:16px 0}
+header{background:#fff;border-bottom:1px solid var(--line);padding:14px 0}
 header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.logo{font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
-.logo i{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:15px}
-.pill{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink2)}
-.pill b{color:var(--pass)}
-.hero{padding:34px 0 18px}
-.hero h1{font-size:clamp(28px,4vw,44px);line-height:1.08;letter-spacing:-.02em;font-weight:700;max-width:860px}
+.logo{font-weight:800;font-size:21px;display:flex;align-items:center;gap:10px;color:var(--navy);letter-spacing:-.01em}
+.logo i{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-style:normal;font-size:15px;font-weight:800}
+.logo small{font-weight:500;color:var(--mute);font-size:13px;letter-spacing:0}
+.sandbox{background:var(--sandboxbg);color:#3c2d91;text-align:center;font-size:13px;font-weight:600;padding:6px 0;border-bottom:1px solid #ddd4ff}
+.pill{font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--ink2);font-weight:500}
+.hero{padding:34px 0 20px}
+.hero h1{font-size:clamp(28px,4vw,44px);line-height:1.1;letter-spacing:-.02em;font-weight:800;max-width:880px;color:var(--ink)}
 .hero h1 em{font-style:normal;color:var(--blue)}
-.hero p{color:var(--ink2);max-width:760px;margin-top:10px;font-size:16.5px}
-.grid{display:grid;grid-template-columns:360px 1fr;gap:20px;padding:10px 0 50px}
-.card{border:1px solid var(--line);border-radius:16px;background:#fff}
-.card h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:16px 18px 6px}
-.scen{padding:6px 10px 12px;display:flex;flex-direction:column;gap:6px}
-.scen button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:10px 12px;transition:.15s}
+.hero p{color:var(--ink2);max-width:780px;margin-top:12px;font-size:16.5px}
+.grid{display:grid;grid-template-columns:370px 1fr;gap:20px;padding:6px 0 50px}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 3px rgba(0,20,53,.06)}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:16px 20px 6px;font-weight:700}
+.scen{padding:6px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.scen button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:11px 13px;transition:.15s;background:#fff}
 .scen button:hover{border-color:var(--blue)}
-.scen button.on{border-color:var(--navy);box-shadow:0 0 0 2px #00308722}
-.scen b{display:block;font-size:14.5px}
+.scen button.on{border-color:var(--blue);box-shadow:0 0 0 3px #0070e01f;background:#f3f8ff}
+.scen b{display:block;font-size:14.5px;font-weight:600}
 .scen span{display:block;font-size:13px;color:var(--mute)}
-.ctrl{padding:14px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
-.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.seg button{all:unset;flex:1;text-align:center;padding:8px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink2)}
-.seg button.on{background:var(--ink);color:#fff}
-.run{all:unset;cursor:pointer;text-align:center;background:var(--navy);color:#fff;font-weight:700;padding:12px;border-radius:12px}
-.run:disabled{opacity:.5;cursor:wait}
+.ctrl{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{all:unset;flex:1;text-align:center;padding:8px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink2);border-radius:999px}
+.seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,20,53,.15)}
+.run{all:unset;cursor:pointer;text-align:center;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:13px;border-radius:999px;transition:.15s}
+.run:hover{background:var(--blueh)}
+.run:disabled{opacity:.55;cursor:wait}
 .right{display:flex;flex-direction:column;gap:16px}
 .plan{padding:4px 18px 16px}
 .plan ol{padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
@@ -55,9 +59,10 @@ footer{border-top:1px solid var(--line);padding:18px 0;color:var(--mute);font-si
 </head>
 <body>
 <header><div class="wrap">
-  <div class="logo"><i>R</i>Rehearsal <span class="muted" style="font-weight:500">for PayPal</span></div>
+  <div class="logo"><i>R</i>Rehearsal <small>for PayPal developers</small></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill" id="h-pp">PayPal sandbox: …</span><span class="pill" id="h-wh">Webhook: …</span><span class="pill" id="h-ai">AI: …</span></div>
 </div></header>
+<div class="sandbox">You're in sandbox mode · every payment here uses PayPal's sandbox, no real money moves</div>
 
 <section class="hero"><div class="wrap">
   <h1>Payment bugs are found by customers. <em>Rehearse them first.</em></h1>
@@ -115,8 +120,8 @@ function showPlan(s) {
 async function boot() {
   const h = await (await fetch("/api/health")).json();
   $("#h-pp").innerHTML = `PayPal sandbox: <b style="color:${h.paypal ? "var(--pass)" : "var(--fail)"}">${h.paypal ? "connected" : "not set"}</b>`;
-  $("#h-wh").innerHTML = `Webhook: <b>${h.webhook ? "registered" : "not set"}</b>`;
-  $("#h-ai").innerHTML = `AI: <b>${h.ai ? "on" : "off"}</b>`;
+  $("#h-wh").innerHTML = `Webhook: <b style="color:${h.webhook ? "var(--pass)" : "var(--fail)"}">${h.webhook ? "registered" : "not set"}</b>`;
+  $("#h-ai").innerHTML = `AI: <b style="color:${h.ai ? "var(--pass)" : "var(--mute)"}">${h.ai ? "on" : "off"}</b>`;
   scenarios = await (await fetch("/api/scenarios")).json();
   $("#scen").innerHTML = scenarios.map((s, i) => `<button data-i="${i}"><b>${s.plan.title}</b><span>${s.english}</span></button>`).join("");
   $("#scen").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#scen button").forEach((x) => x.classList.toggle("on", x === b)); pick = scenarios[+b.dataset.i]; showPlan(pick); };

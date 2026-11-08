@@ -8,7 +8,10 @@ URL=https://rehearsal-${PN}.asia-south1.run.app
 SYNTH=$(gcloud run services describe rehearsal --region asia-south1 --format='value(spec.template.spec.containers[0].env)' 2>/dev/null | grep -o "REHEARSAL_SYNTH_SECRET', 'value': '[0-9a-f]*" | grep -o "[0-9a-f]*$" || true)
 SYNTH=${SYNTH:-$(openssl rand -hex 16)}
 EXTRA=""
-gcloud secrets describe gemini-api-key >/dev/null 2>&1 && EXTRA=",GEMINI_API_KEY=gemini-api-key:latest"
+if gcloud secrets describe gemini-api-key >/dev/null 2>&1; then
+  gcloud secrets add-iam-policy-binding gemini-api-key --member=serviceAccount:${PN}-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor -q >/dev/null
+  EXTRA=",GEMINI_API_KEY=gemini-api-key:latest"
+fi
 gcloud run deploy rehearsal --source . --project $PROJECT --region asia-south1 --allow-unauthenticated \
   --min-instances 0 --max-instances 1 --memory 512Mi --timeout 300 \
   --set-secrets PAYPAL_CLIENT_ID=paypal-client-id:latest,PAYPAL_CLIENT_SECRET=paypal-client-secret:latest${EXTRA} \

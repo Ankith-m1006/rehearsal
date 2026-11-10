@@ -1,3 +1,9 @@
 node_modules/
 .env
 *.log
+video/raw/
+video/check/
+video/joined.mp4
+video/list.txt
+video/*.mp4
+video/probe.mjs

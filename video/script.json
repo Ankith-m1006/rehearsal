@@ -1,0 +1,9 @@
+[
+ {"id": "problem", "text": "Hi, I'm Ankith, and this is Rehearsal. Payment bugs are usually found by customers. A PayPal webhook arrives twice, and the order ships twice. A refund arrives before the payment, and the order comes back to life. You find out when someone complains."},
+ {"id": "what", "text": "Rehearsal plays those situations against your app in the real PayPal sandbox. Real orders, real captures, real refunds, and the real signed PayPal webhooks, delivered as sent, twice, late, out of order, or forged. After every step, it checks what your app believes."},
+ {"id": "compile", "text": "I can describe a situation in plain English. A buyer pays nine dollars for ginger chai, PayPal sends the completed webhook three times, and the shop must ship only once. Gemini turns that into a test plan, and code checks every step and every amount before anything runs."},
+ {"id": "run", "text": "Here is our demo shop, Chai Corner, in its buggy version. Rehearsal creates a real PayPal sandbox order, captures it, and receives PayPal's real webhook, signature verified. Then it delivers the event twice. The shop ships twice. Red."},
+ {"id": "diagnose", "text": "When a step fails, the AI diagnoser reads the timeline and the shop's handler code, and explains the cause, the fix, and a patch, with the step that proves it."},
+ {"id": "catch", "text": "And here's the part I didn't plan. On its very first live run, Rehearsal failed our fixed shop. A refund arrived before the payment event, and the late event re-opened the refunded order and shipped it. None of our unit tests tried that order. We fixed one line, and the live re-run passes."},
+ {"id": "close", "text": "Eight PayPal situations, buggy shop against fixed shop, on real sandbox payments. It's open source, and it runs live today. Rehearse your payments, before your customers do."}
+]

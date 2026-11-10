@@ -84,7 +84,8 @@ export function chaiCorner(variant) {
         break;
       case "PAYMENT.CAPTURE.COMPLETED":
         if (!fixed) { o.status = "paid"; o.paid = true; ship(); } // bug: no_idempotency
-        else { o.status = "paid"; o.paid = true; if (o.shipped_count === 0) ship(); }
+        // PayPal doesn't guarantee order: a refund may arrive before COMPLETED. A refunded order stays refunded.
+        else if (o.status !== "refunded") { o.status = "paid"; o.paid = true; if (o.shipped_count === 0) ship(); }
         break;
       case "PAYMENT.CAPTURE.DENIED":
       case "PAYMENT.CAPTURE.DECLINED":

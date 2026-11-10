@@ -43,3 +43,14 @@ test("approval and pending do not ship in the fixed shop", async () => {
     assert.equal(st.shipped_count, 0); assert.equal(st.paid, false);
   });
 });
+
+test("fixed shop: a refund delivered before a late COMPLETED stays refunded and never ships (found by a live run, 10 Nov)", async () => {
+  await withShop("fixed", async (b) => {
+    const o = await (await post(`${b}/api/orders`, { amount: "12.00" })).json();
+    for (const [t, id] of [["PAYMENT.CAPTURE.REFUNDED", "WH-R"], ["PAYMENT.CAPTURE.COMPLETED", "WH-C"]]) {
+      const raw = ev(t, o.id, id); await post(`${b}/webhooks/paypal`, raw, { "x-rehearsal-synthetic": synthSignature(raw) });
+    }
+    const st = await (await fetch(`${b}/api/orders/${o.id}`)).json();
+    assert.equal(st.status, "refunded"); assert.equal(st.paid, false); assert.equal(st.shipped_count, 0);
+  });
+});

@@ -1,0 +1,160 @@
+[
+ {
+  "scenario": "happy-path",
+  "target": "buggy",
+  "status": "passed",
+  "run": "run_80d707d5",
+  "real": [
+   "PayPal order 1SH40466P29685827 created: COMPLETED",
+   "Real PayPal webhook received: PAYMENT.CAPTURE.COMPLETED"
+  ]
+ },
+ {
+  "scenario": "happy-path",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_3f592b31",
+  "real": [
+   "PayPal order 1N540611SW127413U created: COMPLETED",
+   "Synthetic PAYMENT.CAPTURE.COMPLETED (PayPal did not send one within 20s)"
+  ]
+ },
+ {
+  "scenario": "duplicate-completed",
+  "target": "buggy",
+  "status": "failed",
+  "run": "run_fba13d8c",
+  "real": [
+   "PayPal order 6DK848850H4933603 created: COMPLETED",
+   "Real PayPal webhook received: PAYMENT.CAPTURE.COMPLETED"
+  ]
+ },
+ {
+  "scenario": "duplicate-completed",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_5f108ed8",
+  "real": [
+   "PayPal order 9MX00729VW351833E created: COMPLETED",
+   "Synthetic PAYMENT.CAPTURE.COMPLETED (PayPal did not send one within 20s)"
+  ]
+ },
+ {
+  "scenario": "approved-not-paid",
+  "target": "buggy",
+  "status": "passed",
+  "run": "run_0e30d952",
+  "real": [
+   "Synthetic CHECKOUT.ORDER.APPROVED (PayPal did not send one within 20s)"
+  ]
+ },
+ {
+  "scenario": "approved-not-paid",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_0bf0bc98",
+  "real": [
+   "Synthetic CHECKOUT.ORDER.APPROVED (PayPal did not send one within 20s)"
+  ]
+ },
+ {
+  "scenario": "pending-capture",
+  "target": "buggy",
+  "status": "failed",
+  "run": "run_ba6ca761",
+  "real": [
+   "PayPal order 63K92977XY806044F created: COMPLETED",
+   "Capture (forced pending with PayPal-Mock-Response): 403"
+  ]
+ },
+ {
+  "scenario": "pending-capture",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_9fcce93d",
+  "real": [
+   "PayPal order 9S624020S35275543 created: COMPLETED",
+   "Capture (forced pending with PayPal-Mock-Response): 403"
+  ]
+ },
+ {
+  "scenario": "forged-signature",
+  "target": "buggy",
+  "status": "failed",
+  "run": "run_7a338038",
+  "real": [
+   "PayPal order 0TC29967N2035535H created: COMPLETED",
+   "Real PayPal webhook received: PAYMENT.CAPTURE.COMPLETED"
+  ]
+ },
+ {
+  "scenario": "forged-signature",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_f9a9d93c",
+  "real": [
+   "PayPal order 1SJ97333X4573422Y created: COMPLETED",
+   "Real PayPal webhook received: PAYMENT.CAPTURE.COMPLETED"
+  ]
+ },
+ {
+  "scenario": "refund",
+  "target": "buggy",
+  "status": "failed",
+  "run": "run_88e0958d",
+  "real": [
+   "PayPal order 7EV66789RY2528619 created: COMPLETED",
+   "Synthetic PAYMENT.CAPTURE.COMPLETED (PayPal did not send one within 20s)"
+  ]
+ },
+ {
+  "scenario": "refund",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_c2d7f227",
+  "real": [
+   "PayPal order 89X11213HA370692D created: COMPLETED",
+   "Real PayPal webhook received: PAYMENT.CAPTURE.COMPLETED"
+  ]
+ },
+ {
+  "scenario": "out-of-order",
+  "target": "buggy",
+  "status": "failed",
+  "run": "run_8397508a",
+  "real": [
+   "PayPal order 0KS7278608368353W created: COMPLETED",
+   "PayPal refund (full): COMPLETED"
+  ]
+ },
+ {
+  "scenario": "out-of-order",
+  "target": "fixed",
+  "status": "failed",
+  "run": "run_01e230f7",
+  "real": [
+   "PayPal order 2X279553YW206314B created: COMPLETED",
+   "PayPal refund (full): COMPLETED"
+  ]
+ },
+ {
+  "scenario": "declined",
+  "target": "buggy",
+  "status": "passed",
+  "run": "run_c77b8e91",
+  "real": [
+   "PayPal order 4L481368XF064623A created: COMPLETED",
+   "Capture (forced declined with PayPal-Mock-Response): UNPROCESSABLE_ENTITY"
+  ]
+ },
+ {
+  "scenario": "declined",
+  "target": "fixed",
+  "status": "passed",
+  "run": "run_cf49d4b8",
+  "real": [
+   "PayPal order 00H163444F0710209 created: COMPLETED",
+   "Capture (forced declined with PayPal-Mock-Response): UNPROCESSABLE_ENTITY"
+  ]
+ }
+]
